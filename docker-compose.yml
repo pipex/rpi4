@@ -1,0 +1,45 @@
+version: '2.1'
+
+services:
+  usb:
+    build: ./usb
+    restart: no
+    network_mode: host
+    cap_add:
+      - SYS_MODULE
+      - NET_ADMIN
+    labels:
+      io.balena.features.kernel-modules: '1'
+      io.balena.features.sysfs: '1'
+
+  fanshim:
+    build: ./fanshim
+    restart: always
+    depends_on:
+      - usb
+    devices:
+      - /dev/gpiomem
+
+  home:
+    image: pipex/sweet-home:latest
+    privileged: false # (optional) use this is you want to have your container have access to the host
+    network_mode: host # (optional) use this to add access to the host network interfaces
+    command: sleep infinity # allows the container to run as a daemon
+    restart: always
+    depends_on:
+      - usb
+    environment:
+      # This is to prevent the Balena supervisor from overriding this value to
+      # ensure the right one is used. Do not change this as
+      # it has no effect on the runtime username
+      USER: 'me'
+      # Setting the TZ env var allows for the local date
+      # to be shown in tmux and as result of the `date` command
+      TZ: 'America/Santiago'
+    volumes:
+      - home:/home/me # Keep home files accross container restarts
+      - pkgs:/nix # Keep package configuration accross container restarts
+
+volumes:
+  home:
+  pkgs:
