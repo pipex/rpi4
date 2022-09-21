@@ -73,4 +73,10 @@ load_modules
 setup_usb
 
 # serve dhcp on usb interface
-dnsmasq --interface=usb0 --port=0 --dhcp-range=10.55.0.2,10.55.0.6,255.255.255.248,1h --dhcp-option=3 --leasefile-ro --listen-address=127.0.1.1 -d
+dnsmasq --interface=usb0 \
+	--port=0 \
+	--dhcp-range=10.55.0.2,10.55.0.6,255.255.255.248,1h \
+	--dhcp-option=3 \
+	--leasefile-ro \
+	--listen-address=127.0.1.1 \
+	--no-daemon
