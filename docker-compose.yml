@@ -1,26 +1,31 @@
 version: '2.1'
 
 services:
-  usb:
-    build: ./usb
-    restart: no
+  gadget:
+    image: pipex/gadget:latest
+    restart: on-failure
+    # Needed to have access to the host network
     network_mode: host
     cap_add:
+      # Needed to load kernel modules
       - SYS_MODULE
+      # Needed to configure network
       - NET_ADMIN
     labels:
+      # Needed for access to the host `/lib/modules` directory
       io.balena.features.kernel-modules: '1'
+      # Needed for access to the host `/sys` directory
       io.balena.features.sysfs: '1'
 
   fanshim:
-    build: ./fanshim
+    images: bh.cr/gh_pipex/fanshim 
     restart: always
-    depends_on:
-      - usb
     devices:
+      # Required to access gpio 
       - /dev/gpiomem
     labels:
-      io.balena.features.sysfs: '1'
+      # Required to access the host /proc directory
+      io.balena.features.procfs: '1'
 
   home:
     image: pipex/sweet-home:latest
@@ -38,8 +43,6 @@ services:
       # Setting the TZ env var allows for the local date
       # to be shown in tmux and as result of the `date` command
       TZ: 'America/Santiago'
-      # My personal config
-      NIXPKGS_REPO_URL: https://github.com/pipex/nixpkgs.git
     volumes:
       - home:/home/me # Keep home files accross container restarts
       - pkgs:/nix # Keep package configuration accross container restarts
