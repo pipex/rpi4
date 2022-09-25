@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   gadget:
-    image: pipex/gadget:latest
+    image: pipex/gadget:v0.1.2
     restart: on-failure
     # Needed to have access to the host network
     network_mode: host
@@ -16,9 +16,9 @@ services:
       io.balena.features.kernel-modules: '1'
       # Needed for access to the host `/sys` directory
       io.balena.features.sysfs: '1'
-
+  
   fanshim:
-    images: bh.cr/gh_pipex/fanshim 
+    image: bh.cr/gh_pipex/fanshim 
     restart: always
     devices:
       # Required to access gpio 
@@ -27,14 +27,10 @@ services:
       # Required to access the host /proc directory
       io.balena.features.procfs: '1'
 
-  home:
-    image: pipex/sweet-home:latest
-    privileged: false # (optional) use this is you want to have your container have access to the host
-    network_mode: host # (optional) use this to add access to the host network interfaces
+  sweet-home:
+    image: pipex/sweet-home:v0.6.8
     command: sleep infinity # allows the container to run as a daemon
     restart: always
-    depends_on:
-      - usb
     environment:
       # This is to prevent the Balena supervisor from overriding this value to
       # ensure the right one is used. Do not change this as
@@ -43,6 +39,9 @@ services:
       # Setting the TZ env var allows for the local date
       # to be shown in tmux and as result of the `date` command
       TZ: 'America/Santiago'
+    labels:
+      io.balena.features.supervisor-api: '1'
+      io.balena.features.balena-socket: '1'
     volumes:
       - home:/home/me # Keep home files accross container restarts
       - pkgs:/nix # Keep package configuration accross container restarts
